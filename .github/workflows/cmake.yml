@@ -18,8 +18,6 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
         cpp_compiler: [g++, clang++, cl]
-        vcpkg_manifest_dir: [libdave/cpp/vcpkg-alts/boringssl]
-        cmake_toolchain_file: [libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake]
         build_shared_libs: [ON]
         include:
           - os: windows-latest
@@ -54,14 +52,16 @@ jobs:
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "vcpkg-manifest-dir=${{ github.workspace }}/libdave/cpp/vcpkg-alts/boringssl" >> "$GITHUB_OUTPUT"
+        echo "cmake-toolchain-file=${{ github.workspace }}/libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
       run: >
         cmake -B${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DVCPKG_MANIFEST_DIR=${{ matrix.vcpkg_manifest_dir }}
-        -DCMAKE_TOOLCHAIN_FILE=${{ matrix.cmake_toolchain_file }}
+        -DVCPKG_MANIFEST_DIR=${{ steps.strings.outputs.vcpkg-manifest-dir }}
+        -DCMAKE_TOOLCHAIN_FILE=${{ steps.strings.outputs.cmake-toolchain-file }}
         -DBUILD_SHARED_LIBS=${{ matrix.build_shared_libs }}
         -S ${{ github.workspace }}
 
