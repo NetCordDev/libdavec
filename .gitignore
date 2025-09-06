@@ -12,6 +12,9 @@ dist/
 bin/
 obj/
 
+# Test outputs
+Testing/Temporary/
+
 # CMake generated files
 CMakeFiles/
 
