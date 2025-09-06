@@ -35,6 +35,10 @@ struct Buffer {
     size_t size;
 };
 
+#ifdef __cplusplus
+}
+#endif
+
 static Buffer buffer_from_vector(std::vector<uint8_t> vector) {
     Buffer buffer{};
     
@@ -53,9 +57,20 @@ static Buffer buffer_from_vector(std::vector<uint8_t> vector) {
     return buffer;
 }
 
+static std::set<std::string> recognized_user_ids_to_set(char **recognized_user_ids, size_t recognized_user_ids_count) {
+    std::set<std::string> set;
+    for (size_t i = 0; i < recognized_user_ids_count; i++)
+        set.insert(recognized_user_ids[i]);
+    return set;
+}
+
 static std::vector<uint8_t> buffer_to_vector(Buffer buffer) {
     return std::vector<uint8_t>(buffer.data, buffer.data + buffer.size);
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct HashRatchet {
     uint16_t cipher_suite;
@@ -67,13 +82,6 @@ struct CommitProcessingResult {
     bool ignored;
     void *roster_update;
 };
-
-static std::set<std::string> recognized_user_ids_to_set(char **recognized_user_ids, size_t recognized_user_ids_count) {
-    std::set<std::string> set;
-    for (size_t i = 0; i < recognized_user_ids_count; i++)
-        set.insert(recognized_user_ids[i]);
-    return set;
-}
 
 uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
