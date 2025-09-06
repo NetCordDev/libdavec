@@ -33,13 +33,19 @@ TOOLCHAIN_FILE=$(SOURCE_DIR)/libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake
 SHARED=ON
 CONFIG=Release
 
-all:
-	configure build
+OPTIONAL_ARGUMENTS=
+ifneq ($(CMAKE_CXX_COMPILER),)
+OPTIONAL_ARGUMENTS += -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+endif
+ifneq ($(CMAKE_C_COMPILER),)
+OPTIONAL_ARGUMENTS += -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+endif
+
+all: configure build
 
 configure:
 	cmake -B${BUILD_DIR} \
-	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
-	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
+	${OPTIONAL_ARGUMENTS} \
 	-DCMAKE_BUILD_TYPE=${CONFIG} \
 	-DVCPKG_MANIFEST_DIR=${VCPKG_MANIFEST_DIR} \
 	-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
@@ -56,5 +62,4 @@ clean:
 cclean:
 	cmake -E rm -rf ${BUILD_DIR}
 
-.PHONY:
-	all configure build clean cclean
+.PHONY: all configure build clean cclean
