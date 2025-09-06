@@ -1,11 +1,13 @@
 SSL=boringssl
 
+SOURCE_DIR=$(PWD)
+
 ifeq ($(SSL),boringssl)
-VCPKG_MANIFEST_DIR=$(PWD)/libdave/cpp/vcpkg-alts/boringssl
+VCPKG_MANIFEST_DIR=$(SOURCE_DIR)/libdave/cpp/vcpkg-alts/boringssl
 else ifeq ($(SSL),openssl1.1)
-VCPKG_MANIFEST_DIR=$(PWD)/libdave/cpp/vcpkg-alts/openssl_1.1
+VCPKG_MANIFEST_DIR=$(SOURCE_DIR)/libdave/cpp/vcpkg-alts/openssl_1.1
 else ifeq ($(SSL),openssl3)
-VCPKG_MANIFEST_DIR=$(PWD)/libdave/cpp/vcpkg-alts/openssl_3
+VCPKG_MANIFEST_DIR=$(SOURCE_DIR)/libdave/cpp/vcpkg-alts/openssl_3
 else
 $(error "Unknown SSL option: $(SSL). Valid options are: boringssl, openssl1.1, openssl3")
 endif
@@ -27,16 +29,25 @@ endif
 BUILD_DIR=build
 TEST_DIR=build/test
 CLANG_FORMAT=clang-format -i -style=file:.clang-format
-TOOLCHAIN_FILE=$(PWD)/libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake
+TOOLCHAIN_FILE=$(SOURCE_DIR)/libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake
 SHARED=ON
 CONFIG=Release
 
 all:
+	configure build
+
+configure:
 	cmake -B${BUILD_DIR} \
+	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
+	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
+	-DCMAKE_BUILD_TYPE=${CONFIG} \
 	-DVCPKG_MANIFEST_DIR=${VCPKG_MANIFEST_DIR} \
 	-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
 	-DBUILD_SHARED_LIBS=${SHARED} \
-	-DWIN_TRIPLET_ARCH=${WIN_TRIPLET_ARCH}
+	-DWIN_TRIPLET_ARCH=${WIN_TRIPLET_ARCH} \
+	-S${SOURCE_DIR}
+
+build:
 	cmake --build ${BUILD_DIR} --config ${CONFIG}
 
 clean:
@@ -44,3 +55,6 @@ clean:
 
 cclean:
 	cmake -E rm -rf ${BUILD_DIR}
+
+.PHONY:
+	all configure build clean cclean
