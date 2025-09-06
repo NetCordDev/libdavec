@@ -1,0 +1,36 @@
+# Build outputs
+*.o
+*.a
+*.so
+*.so.*
+*.dylib
+*.exe
+
+# Build directories
+build/
+dist/
+bin/
+obj/
+
+# CMake generated files
+CMakeFiles/
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Generated files
+*.d
+.deps/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
