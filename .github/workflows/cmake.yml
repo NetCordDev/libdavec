@@ -84,4 +84,4 @@ jobs:
       with:
         name: artifact-${{ matrix.os }}-${{ matrix.cpp_compiler }}-${{ matrix.build_type }}-shared${{ matrix.build_shared_libs }}
         path: |
-          ${{ steps.strings.outputs.build-output-dir }}/Release/
+          ${{ steps.strings.outputs.build-output-dir }}/out/
