@@ -1,0 +1,47 @@
+EXPORTS
+    DAVE_INIT_TRANSITION_ID DATA
+    DAVE_DISABLED_VERSION DATA
+    DAVE_MEDIA_TYPE_AUDIO DATA
+    DAVE_MEDIA_TYPE_VIDEO DATA
+    DAVE_CODEC_UNKNOWN DATA
+    DAVE_CODEC_OPUS DATA
+    DAVE_CODEC_VP8 DATA
+    DAVE_CODEC_VP9 DATA
+    DAVE_CODEC_H264 DATA
+    DAVE_CODEC_H265 DATA
+    DAVE_CODEC_AV1 DATA
+    dave_max_supported_protocol_version
+    dave_session_create
+    dave_session_free
+    dave_session_init
+    dave_session_reset
+    dave_session_set_protocol_version
+    dave_session_get_last_epoch_authenticator
+    dave_session_set_external_sender
+    dave_session_process_proposals
+    dave_session_process_commit
+    dave_session_process_welcome
+    dave_session_get_marshalled_key_package
+    dave_session_get_key_ratchet
+    dave_buffer_free
+    dave_encryptor_create
+    dave_encryptor_free
+    dave_encryptor_set_key_ratchet
+    dave_encryptor_set_passthrough_mode
+    dave_encryptor_assign_ssrc_to_codec
+    dave_encryptor_get_protocol_version
+    dave_encryptor_get_max_ciphertext_byte_size
+    dave_encryptor_encrypt
+    dave_encryptor_set_protocol_version_changed_callback
+    dave_decryptor_create
+    dave_decryptor_free
+    dave_decryptor_transition_to_key_ratchet
+    dave_decryptor_transition_to_passthrough_mode
+    dave_decryptor_decrypt
+    dave_decryptor_get_max_plaintext_byte_size
+    dave_transient_private_key_generate
+    dave_transient_private_key_free
+    dave_roster_map_find
+    dave_roster_map_free
+    dave_commit_processing_result_free
+    dave_hash_ratchet_free
