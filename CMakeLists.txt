@@ -14,6 +14,8 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 set(LIBDAVEC_SHARED ${BUILD_SHARED_LIBS})
 
+include(GenerateExportHeader)
+
 # Force libdave to always be static
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
 
@@ -23,16 +25,15 @@ set(BUILD_SHARED_LIBS ${LIBDAVEC_SHARED} CACHE BOOL "Build shared libraries" FOR
 
 add_library(libdavec ${CMAKE_CURRENT_SOURCE_DIR}/src/libdavec.cpp)
 
+generate_export_header(libdavec)
+
+target_include_directories(libdavec PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(libdavec PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 set_target_properties(libdavec PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out
 )
 
-target_include_directories(libdavec PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-
 target_link_libraries(libdavec PRIVATE libdave)
-
-if (WIN32 AND BUILD_SHARED_LIBS)
-    set_target_properties(libdavec PROPERTIES LINK_FLAGS "/DEF:${CMAKE_CURRENT_SOURCE_DIR}/libdavec.def")
-endif ()

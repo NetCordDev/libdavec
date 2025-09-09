@@ -6,39 +6,7 @@
 #include <dave/logger.h>
 #include <cstring>
 
-extern "C" {
-
-extern const int DAVE_INIT_TRANSITION_ID;
-
-extern const int DAVE_DISABLED_VERSION;
-
-typedef enum DaveMediaType : uint8_t {
-    AUDIO = discord::dave::MediaType::Audio,
-    VIDEO = discord::dave::MediaType::Video
-} DaveMediaType;
-
-typedef enum DaveCodec : uint8_t {
-    UNKNOWN = discord::dave::Codec::Unknown,
-    OPUS = discord::dave::Codec::Opus,
-    VP8 = discord::dave::Codec::VP8,
-    VP9 = discord::dave::Codec::VP9,
-    H264 = discord::dave::Codec::H264,
-    H265 = discord::dave::Codec::H265,
-    AV1 = discord::dave::Codec::AV1
-} DaveCodec;
-
-extern const int DAVE_INIT_TRANSITION_ID = discord::dave::kInitTransitionId;
-
-extern const int DAVE_DISABLED_VERSION = discord::dave::kDisabledVersion;
-
-typedef struct DaveBuffer {
-    uint8_t* data;
-    size_t size;
-} DaveBuffer;
-
-#ifdef __cplusplus
-}
-#endif
+#include "libdavec.h"
 
 static DaveBuffer buffer_from_vector(const std::vector<uint8_t>& vector) {
     auto size = vector.size();
@@ -65,20 +33,9 @@ static std::vector<uint8_t> buffer_to_vector(DaveBuffer buffer) {
 extern "C" {
 #endif
 
-typedef struct DaveHashRatchet {
-    uint16_t cipher_suite;
-    DaveBuffer base_secret;
-} DaveHashRatchet;
+const int DAVE_INIT_TRANSITION_ID = discord::dave::kInitTransitionId;
 
-typedef struct DaveCommitProcessingResult {
-    bool failed;
-    bool ignored;
-    void *roster_update;
-} DaveCommitProcessingResult;
-
-typedef void (*DaveMlsFailureCallback)(const char*, const char*);
-
-typedef void (*DaveProtocolVersionChangedCallback)(void);
+const int DAVE_DISABLED_VERSION = discord::dave::kDisabledVersion;
 
 uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
