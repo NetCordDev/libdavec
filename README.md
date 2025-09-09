@@ -5,8 +5,8 @@ libdavec provides C language bindings for Discord's [libdave](https://github.com
 ## Usage
 
 For usage examples and API reference, see:
-- [libdave documentation](https://github.com/discord/libdave) - The underlying C++ library
-- [DAVE protocol specification](https://daveprotocol.com) - Protocol details
+- [libdave](https://github.com/discord/libdave) - The underlying C++ library
+- [DAVE protocol whitepaper](https://daveprotocol.com) - Protocol details
 - [Header file](include/libdavec.h) - C API reference
 
 ## Building
