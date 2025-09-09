@@ -56,6 +56,8 @@ void dave_session_reset(void *session);
 
 void dave_session_set_protocol_version(void *session, uint16_t protocol_version);
 
+uint16_t dave_session_get_protocol_version(void *session);
+
 struct Buffer dave_session_get_last_epoch_authenticator(void *session);
 
 void dave_session_set_external_sender(void *session, struct Buffer marshalled_external_sender);
