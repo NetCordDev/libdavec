@@ -47,7 +47,7 @@ typedef enum DaveCodec : uint8_t {
 
 uint16_t dave_max_supported_protocol_version(void);
 
-void *dave_session_create(const char *context, const char *auth_session_id, DaveMlsFailureCallback mls_failure_callback);
+void* dave_session_create(const char *context, const char *auth_session_id, DaveMlsFailureCallback mls_failure_callback);
 
 void dave_session_free(void *session);
 
@@ -67,7 +67,7 @@ DaveBuffer dave_session_process_proposals(void *session, DaveBuffer proposals, c
 
 DaveCommitProcessingResult dave_session_process_commit(void *session, DaveBuffer commit);
 
-void *dave_session_process_welcome(void *session, DaveBuffer welcome, const char * const *recognized_user_ids, size_t recognized_user_ids_count);
+void* dave_session_process_welcome(void *session, DaveBuffer welcome, const char * const *recognized_user_ids, size_t recognized_user_ids_count);
 
 DaveBuffer dave_session_get_marshalled_key_package(void *session);
 
@@ -75,7 +75,7 @@ DaveHashRatchet dave_session_get_key_ratchet(const void *session, const char *us
 
 void dave_buffer_free(DaveBuffer buffer);
 
-void *dave_encryptor_create(void);
+void* dave_encryptor_create(void);
 
 void dave_encryptor_free(void *encryptor);
 
@@ -93,7 +93,7 @@ size_t dave_encryptor_encrypt(void *encryptor, DaveMediaType media_type, uint32_
 
 void dave_encryptor_set_protocol_version_changed_callback(void *encryptor, DaveProtocolVersionChangedCallback callback);
 
-void *dave_decryptor_create(void);
+void* dave_decryptor_create(void);
 
 void dave_decryptor_free(void *decryptor);
 
@@ -105,7 +105,7 @@ size_t dave_decryptor_decrypt(void *decryptor, DaveMediaType media_type, DaveBuf
 
 size_t dave_decryptor_get_max_plaintext_byte_size(void *decryptor, DaveMediaType media_type, size_t encrypted_frame_size);
 
-void *dave_transient_private_key_generate(uint16_t protocol_version);
+void* dave_transient_private_key_generate(uint16_t protocol_version);
 
 void dave_transient_private_key_free(void *key);
 

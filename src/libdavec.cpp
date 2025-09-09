@@ -84,17 +84,17 @@ uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
 }
 
-void *dave_session_create(const char *context, const char *auth_session_id, DaveMlsFailureCallback mls_failure_callback) {
-    discord::dave::mls::Session::MLSFailureCallback cppCallback;
+void* dave_session_create(const char *context, const char *auth_session_id, DaveMlsFailureCallback mls_failure_callback) {
+    discord::dave::mls::Session::MLSFailureCallback mls_failure_callback_obj;
     if (mls_failure_callback) {
-        cppCallback = [mls_failure_callback](const std::string& func, const std::string& reason) {
+        mls_failure_callback_obj = [mls_failure_callback](const std::string& func, const std::string& reason) {
             mls_failure_callback(func.c_str(), reason.c_str());
         };
     }
     else
-        cppCallback = nullptr;
+        mls_failure_callback_obj = nullptr;
     
-    return new discord::dave::mls::Session(context, auth_session_id, cppCallback);
+    return new discord::dave::mls::Session(context, auth_session_id, mls_failure_callback_obj);
 }
 
 void dave_session_free(void *session) {
@@ -180,7 +180,7 @@ DaveCommitProcessingResult dave_session_process_commit(void *session, DaveBuffer
     return { .failed = failed, .ignored = ignored, .roster_update = roster_update_ptr };
 }
 
-void *dave_session_process_welcome(void *session, DaveBuffer welcome, const char * const *recognized_user_ids, size_t recognized_user_ids_count){
+void* dave_session_process_welcome(void *session, DaveBuffer welcome, const char * const *recognized_user_ids, size_t recognized_user_ids_count){
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto welcome_vector = buffer_to_vector(welcome);
@@ -214,7 +214,7 @@ DaveHashRatchet dave_session_get_key_ratchet(const void *session, const char *us
     return {};
 }
 
-void *dave_encryptor_create(void) {
+void* dave_encryptor_create(void) {
     return new discord::dave::Encryptor();
 }
 
@@ -288,7 +288,7 @@ void dave_encryptor_set_protocol_version_changed_callback(void *encryptor, DaveP
     });
 }
 
-void *dave_decryptor_create(void) {
+void* dave_decryptor_create(void) {
     return new discord::dave::Decryptor();
 }
 
@@ -334,7 +334,7 @@ size_t dave_decryptor_get_max_plaintext_byte_size(void *decryptor, DaveMediaType
     return decryption_obj->GetMaxPlaintextByteSize(media_type_obj, encrypted_frame_size);
 }
 
-void *dave_transient_private_key_generate(uint16_t protocol_version) {
+void* dave_transient_private_key_generate(uint16_t protocol_version) {
     return new ::mlspp::SignaturePrivateKey(
         ::mlspp::SignaturePrivateKey::generate(
             ::discord::dave::mls::CiphersuiteForProtocolVersion(protocol_version)));
