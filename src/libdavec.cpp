@@ -127,6 +127,12 @@ void dave_session_set_protocol_version(void *session, uint16_t protocol_version)
     session_obj->SetProtocolVersion(protocol_version);
 }
 
+uint16_t dave_session_get_protocol_version(void *session) {
+    auto session_obj = (discord::dave::mls::Session*)session;
+
+    return session_obj->GetProtocolVersion();
+}
+
 Buffer dave_session_get_last_epoch_authenticator(void *session) {
     auto session_obj = (discord::dave::mls::Session*)session;
     

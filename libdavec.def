@@ -16,6 +16,7 @@ EXPORTS
     dave_session_init
     dave_session_reset
     dave_session_set_protocol_version
+    dave_session_get_protocol_version
     dave_session_get_last_epoch_authenticator
     dave_session_set_external_sender
     dave_session_process_proposals
