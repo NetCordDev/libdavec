@@ -8,32 +8,33 @@
 
 extern "C" {
 
+extern const int DAVE_INIT_TRANSITION_ID;
+
+extern const int DAVE_DISABLED_VERSION;
+
+typedef enum MediaType : uint8_t {
+    AUDIO = discord::dave::MediaType::Audio,
+    VIDEO = discord::dave::MediaType::Video
+} MediaType;
+
+typedef enum Codec : uint8_t {
+    UNKNOWN = discord::dave::Codec::Unknown,
+    OPUS = discord::dave::Codec::Opus,
+    VP8 = discord::dave::Codec::VP8,
+    VP9 = discord::dave::Codec::VP9,
+    H264 = discord::dave::Codec::H264,
+    H265 = discord::dave::Codec::H265,
+    AV1 = discord::dave::Codec::AV1
+} Codec;
+
 extern const int DAVE_INIT_TRANSITION_ID = discord::dave::kInitTransitionId;
 
 extern const int DAVE_DISABLED_VERSION = discord::dave::kDisabledVersion;
 
-extern const uint8_t DAVE_MEDIA_TYPE_AUDIO = discord::dave::MediaType::Audio;
-
-extern const uint8_t DAVE_MEDIA_TYPE_VIDEO = discord::dave::MediaType::Video;
-
-extern const uint8_t DAVE_CODEC_UNKNOWN = discord::dave::Codec::Unknown;
-
-extern const uint8_t DAVE_CODEC_OPUS = discord::dave::Codec::Opus;
-
-extern const uint8_t DAVE_CODEC_VP8 = discord::dave::Codec::VP8;
-
-extern const uint8_t DAVE_CODEC_VP9 = discord::dave::Codec::VP9;
-
-extern const uint8_t DAVE_CODEC_H264 = discord::dave::Codec::H264;
-
-extern const uint8_t DAVE_CODEC_H265 = discord::dave::Codec::H265;
-
-extern const uint8_t DAVE_CODEC_AV1 = discord::dave::Codec::AV1;
-
-struct Buffer {
+typedef struct Buffer {
     uint8_t* data;
     size_t size;
-};
+} Buffer;
 
 #ifdef __cplusplus
 }
@@ -72,16 +73,16 @@ static std::vector<uint8_t> buffer_to_vector(Buffer buffer) {
 extern "C" {
 #endif
 
-struct HashRatchet {
+typedef struct HashRatchet {
     uint16_t cipher_suite;
     Buffer base_secret;
-};
+} HashRatchet;
 
-struct CommitProcessingResult {
+typedef struct CommitProcessingResult {
     bool failed;
     bool ignored;
     void *roster_update;
-};
+} CommitProcessingResult;
 
 uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
@@ -255,7 +256,7 @@ uint16_t dave_encryptor_get_protocol_version(void *encryptor) {
     return encryptor_obj->GetProtocolVersion();
 }
 
-size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, uint8_t media_type, size_t frame_size) {
+size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, MediaType media_type, size_t frame_size) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -263,7 +264,7 @@ size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, uint8_t medi
     return encryptor_obj->GetMaxCiphertextByteSize(media_type_obj, frame_size);
 }
 
-size_t dave_encryptor_encrypt(void *encryptor, uint8_t media_type, uint32_t ssrc, Buffer frame, Buffer encrypted_frame) {
+size_t dave_encryptor_encrypt(void *encryptor, MediaType media_type, uint32_t ssrc, Buffer frame, Buffer encrypted_frame) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -315,7 +316,7 @@ void dave_decryptor_transition_to_passthrough_mode(void *decryptor, bool passthr
     decryption_obj->TransitionToPassthroughMode(passthrough_mode, std::chrono::seconds(transition_expiry_seconds));
 }
 
-size_t dave_decryptor_decrypt(void *decryptor, uint8_t media_type, Buffer encrypted_frame, Buffer frame) {
+size_t dave_decryptor_decrypt(void *decryptor, MediaType media_type, Buffer encrypted_frame, Buffer frame) {
     auto decryption_obj = (discord::dave::Decryptor*)decryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -327,7 +328,7 @@ size_t dave_decryptor_decrypt(void *decryptor, uint8_t media_type, Buffer encryp
     return decryption_obj->Decrypt(media_type_obj, encrypted_frame_view, frame_view);
 }
 
-size_t dave_decryptor_get_max_plaintext_byte_size(void *decryptor, uint8_t media_type, size_t encrypted_frame_size) {
+size_t dave_decryptor_get_max_plaintext_byte_size(void *decryptor, MediaType media_type, size_t encrypted_frame_size) {
     auto decryption_obj = (discord::dave::Decryptor*)decryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
