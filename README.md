@@ -1,6 +1,6 @@
 # libdavec
 
-libdavec provides C language bindings for Discord's [libdave](https://github.com/discord/libdave) library, enabling integration of the DAVE protocol in languages that can interface with C libraries.
+libdavec provides C language bindings for Discord's [libdave](https://github.com/discord/libdave), enabling integration of the DAVE protocol in languages that can interface with C libraries.
 
 ## Usage
 
