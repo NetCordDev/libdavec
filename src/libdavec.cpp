@@ -12,12 +12,12 @@ extern const int DAVE_INIT_TRANSITION_ID;
 
 extern const int DAVE_DISABLED_VERSION;
 
-typedef enum MediaType : uint8_t {
+typedef enum DaveMediaType : uint8_t {
     AUDIO = discord::dave::MediaType::Audio,
     VIDEO = discord::dave::MediaType::Video
-} MediaType;
+} DaveMediaType;
 
-typedef enum Codec : uint8_t {
+typedef enum DaveCodec : uint8_t {
     UNKNOWN = discord::dave::Codec::Unknown,
     OPUS = discord::dave::Codec::Opus,
     VP8 = discord::dave::Codec::VP8,
@@ -25,47 +25,39 @@ typedef enum Codec : uint8_t {
     H264 = discord::dave::Codec::H264,
     H265 = discord::dave::Codec::H265,
     AV1 = discord::dave::Codec::AV1
-} Codec;
+} DaveCodec;
 
 extern const int DAVE_INIT_TRANSITION_ID = discord::dave::kInitTransitionId;
 
 extern const int DAVE_DISABLED_VERSION = discord::dave::kDisabledVersion;
 
-typedef struct Buffer {
+typedef struct DaveBuffer {
     uint8_t* data;
     size_t size;
-} Buffer;
+} DaveBuffer;
 
 #ifdef __cplusplus
 }
 #endif
 
-static Buffer buffer_from_vector(std::vector<uint8_t> vector) {
-    Buffer buffer{};
-    
+static DaveBuffer buffer_from_vector(const std::vector<uint8_t>& vector) {
     auto size = vector.size();
     auto data = (uint8_t*)malloc(size);
-    if (data) {
-        memcpy(data, vector.data(), size);
-        buffer.data = data;
-        buffer.size = size;
-    }
-    else {
-        buffer.data = nullptr;
-        buffer.size = 0;
-    }
+    if (!data)
+        return {};
 
-    return buffer;
+    memcpy(data, vector.data(), size);
+    return { data, size };
 }
 
-static std::set<std::string> recognized_user_ids_to_set(char **recognized_user_ids, size_t recognized_user_ids_count) {
+static std::set<std::string> recognized_user_ids_to_set(const char * const *recognized_user_ids, size_t recognized_user_ids_count) {
     std::set<std::string> set;
     for (size_t i = 0; i < recognized_user_ids_count; i++)
         set.insert(recognized_user_ids[i]);
-    return set;
+    return std::move(set);
 }
 
-static std::vector<uint8_t> buffer_to_vector(Buffer buffer) {
+static std::vector<uint8_t> buffer_to_vector(DaveBuffer buffer) {
     return std::vector<uint8_t>(buffer.data, buffer.data + buffer.size);
 }
 
@@ -73,28 +65,32 @@ static std::vector<uint8_t> buffer_to_vector(Buffer buffer) {
 extern "C" {
 #endif
 
-typedef struct HashRatchet {
+typedef struct DaveHashRatchet {
     uint16_t cipher_suite;
-    Buffer base_secret;
-} HashRatchet;
+    DaveBuffer base_secret;
+} DaveHashRatchet;
 
-typedef struct CommitProcessingResult {
+typedef struct DaveCommitProcessingResult {
     bool failed;
     bool ignored;
     void *roster_update;
-} CommitProcessingResult;
+} DaveCommitProcessingResult;
+
+typedef void (*DaveMlsFailureCallback)(const char*, const char*);
 
 uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
 }
 
-void *dave_session_create(char *context, char *auth_session_id, void (*mls_failure_callback)(const char*, const char*)) {
-    discord::dave::mls::Session::MLSFailureCallback cppCallback = nullptr;
+void *dave_session_create(const char *context, const char *auth_session_id, DaveMlsFailureCallback mls_failure_callback) {
+    discord::dave::mls::Session::MLSFailureCallback cppCallback;
     if (mls_failure_callback) {
         cppCallback = [mls_failure_callback](const std::string& func, const std::string& reason) {
             mls_failure_callback(func.c_str(), reason.c_str());
         };
     }
+    else
+        cppCallback = nullptr;
     
     return new discord::dave::mls::Session(context, auth_session_id, cppCallback);
 }
@@ -103,7 +99,7 @@ void dave_session_free(void *session) {
     delete (discord::dave::mls::Session*)session;
 }
 
-void dave_session_init(void *session, uint16_t protocol_version, uint64_t group_id, char *self_user_id, void *transient_key) {
+void dave_session_init(void *session, uint16_t protocol_version, uint64_t group_id, const char *self_user_id, const void *transient_key) {
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto transient_key_obj = (::mlspp::SignaturePrivateKey*)transient_key;
@@ -128,75 +124,75 @@ void dave_session_set_protocol_version(void *session, uint16_t protocol_version)
     session_obj->SetProtocolVersion(protocol_version);
 }
 
-uint16_t dave_session_get_protocol_version(void *session) {
-    auto session_obj = (discord::dave::mls::Session*)session;
+uint16_t dave_session_get_protocol_version(const void *session) {
+    auto session_obj = (const discord::dave::mls::Session*)session;
 
     return session_obj->GetProtocolVersion();
 }
 
-Buffer dave_session_get_last_epoch_authenticator(void *session) {
-    auto session_obj = (discord::dave::mls::Session*)session;
+DaveBuffer dave_session_get_last_epoch_authenticator(const void *session) {
+    auto session_obj = (const discord::dave::mls::Session*)session;
     
     auto result = session_obj->GetLastEpochAuthenticator();
 
     return buffer_from_vector(result);
 }
 
-void dave_session_set_external_sender(void *session, Buffer marshalled_external_sender) {
+void dave_session_set_external_sender(void *session, DaveBuffer marshalled_external_sender) {
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto vector = buffer_to_vector(marshalled_external_sender);
 
-    session_obj->SetExternalSender(vector);
+    session_obj->SetExternalSender(std::move(vector));
 }
 
-Buffer dave_session_process_proposals(void *session, Buffer proposals, char **recognized_user_ids, size_t recognized_user_ids_count) {
+DaveBuffer dave_session_process_proposals(void *session, DaveBuffer proposals, const char * const *recognized_user_ids, size_t recognized_user_ids_count) {
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto proposals_vector = buffer_to_vector(proposals);
 
     auto set = recognized_user_ids_to_set(recognized_user_ids, recognized_user_ids_count);
 
-    auto result = session_obj->ProcessProposals(proposals_vector, set);
+    auto result = session_obj->ProcessProposals(std::move(proposals_vector), std::move(set));
     if (result)
         return buffer_from_vector(*result);
 
-    return { nullptr, 0 };
+    return {};
 }
 
-CommitProcessingResult dave_session_process_commit(void *session, Buffer commit) {
+DaveCommitProcessingResult dave_session_process_commit(void *session, DaveBuffer commit) {
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto commit_vector = buffer_to_vector(commit);
 
-    auto result = session_obj->ProcessCommit(commit_vector);
+    auto result = session_obj->ProcessCommit(std::move(commit_vector));
 
     auto failed = std::holds_alternative<discord::dave::failed_t>(result);
     auto ignored = std::holds_alternative<discord::dave::ignored_t>(result);
-    auto rosterUpdate = discord::dave::GetOptional<discord::dave::RosterMap>(std::move(result));
+    auto roster_update = discord::dave::GetOptional<discord::dave::RosterMap>(std::move(result));
 
-    auto rosterUpdatePtr = rosterUpdate
-        ? new discord::dave::RosterMap(*rosterUpdate)
+    auto roster_update_ptr = roster_update
+        ? new discord::dave::RosterMap(std::move(*roster_update))
         : nullptr;
 
-    return { failed, ignored, rosterUpdatePtr };
+    return { .failed = failed, .ignored = ignored, .roster_update = roster_update_ptr };
 }
 
-void *dave_session_process_welcome(void *session, Buffer welcome, char **recognized_user_ids, size_t recognized_user_ids_count){
+void *dave_session_process_welcome(void *session, DaveBuffer welcome, const char * const *recognized_user_ids, size_t recognized_user_ids_count){
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto welcome_vector = buffer_to_vector(welcome);
 
     auto set = recognized_user_ids_to_set(recognized_user_ids, recognized_user_ids_count);
 
-    auto result = session_obj->ProcessWelcome(welcome_vector, set);
+    auto result = session_obj->ProcessWelcome(std::move(welcome_vector), std::move(set));
     if (result)
-        return new discord::dave::RosterMap(*result);
+        return new discord::dave::RosterMap(std::move(*result));
 
     return nullptr;
 }
 
-Buffer dave_session_get_marshalled_key_package(void *session) {
+DaveBuffer dave_session_get_marshalled_key_package(void *session) {
     auto session_obj = (discord::dave::mls::Session*)session;
 
     auto result = session_obj->GetMarshalledKeyPackage();
@@ -204,8 +200,8 @@ Buffer dave_session_get_marshalled_key_package(void *session) {
     return buffer_from_vector(result);
 }
 
-HashRatchet dave_session_get_key_ratchet(void *session, char *user_id) {
-    auto session_obj = (discord::dave::mls::Session*)session;
+DaveHashRatchet dave_session_get_key_ratchet(const void *session, const char *user_id) {
+    auto session_obj = (const discord::dave::mls::Session*)session;
 
     auto result = session_obj->GetKeyRatchet(user_id);
     if (result) {
@@ -213,7 +209,7 @@ HashRatchet dave_session_get_key_ratchet(void *session, char *user_id) {
         return { static_cast<uint16_t>(hash_ratchet.suite.cipher_suite()), buffer_from_vector(hash_ratchet.next_secret) };
     }
 
-    return { 0, { nullptr, 0 } };
+    return {};
 }
 
 void *dave_encryptor_create(void) {
@@ -224,14 +220,14 @@ void dave_encryptor_free(void *encryptor) {
     delete (discord::dave::Encryptor*)encryptor;
 }
 
-void dave_encryptor_set_key_ratchet(void *encryptor, HashRatchet key_ratchet) {
+void dave_encryptor_set_key_ratchet(void *encryptor, DaveHashRatchet key_ratchet) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     auto cipher_suite = ::mlspp::CipherSuite(static_cast<::mlspp::CipherSuite::ID>(key_ratchet.cipher_suite));
 
     auto base_secret = buffer_to_vector(key_ratchet.base_secret);
 
-    auto key_ratchet_ptr = std::make_unique<discord::dave::MlsKeyRatchet>(cipher_suite, base_secret);
+    auto key_ratchet_ptr = std::make_unique<discord::dave::MlsKeyRatchet>(cipher_suite, std::move(base_secret));
 
     encryptor_obj->SetKeyRatchet(std::move(key_ratchet_ptr));
 }
@@ -242,7 +238,7 @@ void dave_encryptor_set_passthrough_mode(void *encryptor, bool passthrough_mode)
     encryptor_obj->SetPassthroughMode(passthrough_mode);
 }
 
-void dave_encryptor_assign_ssrc_to_codec(void *encryptor, uint32_t ssrc, uint8_t codec_type) {
+void dave_encryptor_assign_ssrc_to_codec(void *encryptor, uint32_t ssrc, DaveCodec codec_type) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     auto codec_type_obj = (discord::dave::Codec)codec_type;
@@ -250,13 +246,13 @@ void dave_encryptor_assign_ssrc_to_codec(void *encryptor, uint32_t ssrc, uint8_t
     encryptor_obj->AssignSsrcToCodec(ssrc, codec_type_obj);
 }
 
-uint16_t dave_encryptor_get_protocol_version(void *encryptor) {
-    auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
+uint16_t dave_encryptor_get_protocol_version(const void *encryptor) {
+    auto encryptor_obj = (const discord::dave::Encryptor*)encryptor;
 
     return encryptor_obj->GetProtocolVersion();
 }
 
-size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, MediaType media_type, size_t frame_size) {
+size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, DaveMediaType media_type, size_t frame_size) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -264,7 +260,7 @@ size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, MediaType me
     return encryptor_obj->GetMaxCiphertextByteSize(media_type_obj, frame_size);
 }
 
-size_t dave_encryptor_encrypt(void *encryptor, MediaType media_type, uint32_t ssrc, Buffer frame, Buffer encrypted_frame) {
+size_t dave_encryptor_encrypt(void *encryptor, DaveMediaType media_type, uint32_t ssrc, DaveBuffer frame, DaveBuffer encrypted_frame) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -298,14 +294,14 @@ void dave_decryptor_free(void *decryptor) {
     delete (discord::dave::Decryptor*)decryptor;
 }
 
-void dave_decryptor_transition_to_key_ratchet(void *decryptor, HashRatchet key_ratchet, int64_t transition_expiry_seconds) {
+void dave_decryptor_transition_to_key_ratchet(void *decryptor, DaveHashRatchet key_ratchet, int64_t transition_expiry_seconds) {
     auto decryption_obj = (discord::dave::Decryptor*)decryptor;
 
     auto cipher_suite = ::mlspp::CipherSuite(static_cast<::mlspp::CipherSuite::ID>(key_ratchet.cipher_suite));
 
     auto base_secret = buffer_to_vector(key_ratchet.base_secret);
 
-    auto key_ratchet_ptr = std::make_unique<discord::dave::MlsKeyRatchet>(cipher_suite, base_secret);
+    auto key_ratchet_ptr = std::make_unique<discord::dave::MlsKeyRatchet>(cipher_suite, std::move(base_secret));
 
     decryption_obj->TransitionToKeyRatchet(std::move(key_ratchet_ptr), std::chrono::seconds(transition_expiry_seconds));
 }
@@ -316,7 +312,7 @@ void dave_decryptor_transition_to_passthrough_mode(void *decryptor, bool passthr
     decryption_obj->TransitionToPassthroughMode(passthrough_mode, std::chrono::seconds(transition_expiry_seconds));
 }
 
-size_t dave_decryptor_decrypt(void *decryptor, MediaType media_type, Buffer encrypted_frame, Buffer frame) {
+size_t dave_decryptor_decrypt(void *decryptor, DaveMediaType media_type, DaveBuffer encrypted_frame, DaveBuffer frame) {
     auto decryption_obj = (discord::dave::Decryptor*)decryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -328,7 +324,7 @@ size_t dave_decryptor_decrypt(void *decryptor, MediaType media_type, Buffer encr
     return decryption_obj->Decrypt(media_type_obj, encrypted_frame_view, frame_view);
 }
 
-size_t dave_decryptor_get_max_plaintext_byte_size(void *decryptor, MediaType media_type, size_t encrypted_frame_size) {
+size_t dave_decryptor_get_max_plaintext_byte_size(void *decryptor, DaveMediaType media_type, size_t encrypted_frame_size) {
     auto decryption_obj = (discord::dave::Decryptor*)decryptor;
 
     auto media_type_obj = (discord::dave::MediaType)media_type;
@@ -346,8 +342,8 @@ void dave_transient_private_key_free(void *key) {
     delete (::mlspp::SignaturePrivateKey*)key;
 }
 
-Buffer dave_roster_map_find(void *roster_map, uint64_t key) {
-    auto roster = (discord::dave::RosterMap*)roster_map;
+DaveBuffer dave_roster_map_find(const void *roster_map, uint64_t key) {
+    auto roster = (const discord::dave::RosterMap*)roster_map;
     auto it = roster->find(key);
     if (it == roster->end())
         return { nullptr, 0 };
@@ -359,15 +355,15 @@ void dave_roster_map_free(void *roster_map) {
     delete (discord::dave::RosterMap*)roster_map;
 }
 
-void dave_buffer_free(Buffer buffer) {
+void dave_buffer_free(DaveBuffer buffer) {
     free(buffer.data);
 }
 
-void dave_commit_processing_result_free(CommitProcessingResult result) {
+void dave_commit_processing_result_free(DaveCommitProcessingResult result) {
     dave_roster_map_free(result.roster_update);
 }
 
-void dave_hash_ratchet_free(HashRatchet hash_ratchet) {
+void dave_hash_ratchet_free(DaveHashRatchet hash_ratchet) {
     dave_buffer_free(hash_ratchet.base_secret);
 }
 
