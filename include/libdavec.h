@@ -24,6 +24,8 @@ typedef struct DaveCommitProcessingResult {
 
 typedef void (*DaveMlsFailureCallback)(const char*, const char*);
 
+typedef void (*DaveProtocolVersionChangedCallback)(void);
+
 extern const int DAVE_INIT_TRANSITION_ID;
 
 extern const int DAVE_DISABLED_VERSION;
@@ -89,7 +91,7 @@ size_t dave_encryptor_get_max_ciphertext_byte_size(void *encryptor, DaveMediaTyp
 
 size_t dave_encryptor_encrypt(void *encryptor, DaveMediaType media_type, uint32_t ssrc, DaveBuffer frame, DaveBuffer encrypted_frame);
 
-void dave_encryptor_set_protocol_version_changed_callback(void *encryptor, void (*callback)(void));
+void dave_encryptor_set_protocol_version_changed_callback(void *encryptor, DaveProtocolVersionChangedCallback callback);
 
 void *dave_decryptor_create(void);
 

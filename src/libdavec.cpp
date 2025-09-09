@@ -78,6 +78,8 @@ typedef struct DaveCommitProcessingResult {
 
 typedef void (*DaveMlsFailureCallback)(const char*, const char*);
 
+typedef void (*DaveProtocolVersionChangedCallback)(void);
+
 uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
 }
@@ -278,7 +280,7 @@ size_t dave_encryptor_encrypt(void *encryptor, DaveMediaType media_type, uint32_
     return bytes_written;
 }
 
-void dave_encryptor_set_protocol_version_changed_callback(void *encryptor, void (*callback)(void)) {
+void dave_encryptor_set_protocol_version_changed_callback(void *encryptor, DaveProtocolVersionChangedCallback callback) {
     auto encryptor_obj = (discord::dave::Encryptor*)encryptor;
 
     encryptor_obj->SetProtocolVersionChangedCallback([callback]() {
@@ -346,7 +348,7 @@ DaveBuffer dave_roster_map_find(const void *roster_map, uint64_t key) {
     auto roster = (const discord::dave::RosterMap*)roster_map;
     auto it = roster->find(key);
     if (it == roster->end())
-        return { nullptr, 0 };
+        return {};
 
     return buffer_from_vector(it->second);
 }
