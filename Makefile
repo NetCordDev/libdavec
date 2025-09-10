@@ -37,6 +37,7 @@ CLANG_FORMAT=clang-format -i -style=file:.clang-format
 TOOLCHAIN_FILE=$(SOURCE_DIR)libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake
 SHARED=ON
 CONFIG=Release
+PDB=OFF
 
 OPTIONAL_ARGUMENTS=
 ifneq ($(CMAKE_CXX_COMPILER),)
@@ -60,6 +61,7 @@ configure:
 	-DVCPKG_MANIFEST_DIR=${VCPKG_MANIFEST_DIR} \
 	-DCMAKE_TOOLCHAIN_FILE=${TOOLCHAIN_FILE} \
 	-DBUILD_SHARED_LIBS=${SHARED} \
+	-DPDB=${PDB} \
 	-S${SOURCE_DIR}
 
 build:

@@ -53,7 +53,8 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "vcpkg-manifest-dir=${{ github.workspace }}/libdave/cpp/vcpkg-alts/boringssl" >> "$GITHUB_OUTPUT"
         echo "cmake-toolchain-file=${{ github.workspace }}/libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake" >> "$GITHUB_OUTPUT"
-        echo "build-type=RelWithDebInfo" >> "$GITHUB_OUTPUT"
+        echo "build-type=Release" >> "$GITHUB_OUTPUT"
+        echo "pdb=ON" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
       run: >
@@ -64,6 +65,7 @@ jobs:
         VCPKG_MANIFEST_DIR=${{ steps.strings.outputs.vcpkg-manifest-dir }}
         TOOLCHAIN_FILE=${{ steps.strings.outputs.cmake-toolchain-file }}
         SHARED=${{ matrix.build_shared_libs }}
+        PDB=${{ steps.strings.outputs.pdb }}
         SOURCE_DIR=${{ github.workspace }}
 
     - name: Build
