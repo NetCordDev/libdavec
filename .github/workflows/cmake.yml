@@ -1,32 +1,35 @@
 name: CMake
-
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release, RelWithDebInfo]
-        cpp_compiler: [g++, clang++, cl]
-        build_shared_libs: [ON]
         include:
           - os: ubuntu-latest
+            build_type: RelWithDebInfo
             cpp_compiler: g++
+            build_shared_libs: ON
+            
           - os: ubuntu-latest
+            build_type: RelWithDebInfo
             cpp_compiler: clang++
+            build_shared_libs: ON
+
           - os: windows-latest
-            cpp_compiler: cl
-        exclude:
-          - os: ubuntu-latest
             build_type: Release
+            cpp_compiler: cl
+            build_shared_libs: ON
+
+          - os: windows-latest
+            build_type: RelWithDebInfo
+            cpp_compiler: cl
+            build_shared_libs: ON
 
     steps:
     - uses: actions/checkout@v4
