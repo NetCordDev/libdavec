@@ -16,7 +16,7 @@ jobs:
 
       matrix:
         os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
+        build_type: [RelWithDebInfo]
         cpp_compiler: [g++, clang++, cl]
         build_shared_libs: [ON]
         include:
@@ -82,6 +82,18 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: artifact-${{ matrix.os }}-${{ matrix.cpp_compiler }}-${{ matrix.build_type }}-shared${{ matrix.build_shared_libs }}
+        name: artifact-${{ matrix.os }}-${{ matrix.cpp_compiler }}-shared${{ matrix.build_shared_libs }}-symbolsON
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/out/
+
+    - name: Strip Symbols
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        strip ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.so
+      
+    - uses: actions/upload-artifact@v4
+      if: matrix.os == 'ubuntu-latest'
+      with:
+        name: artifact-${{ matrix.os }}-${{ matrix.cpp_compiler }}-shared${{ matrix.build_shared_libs }}-symbolsOFF
         path: |
           ${{ steps.strings.outputs.build-output-dir }}/out/
