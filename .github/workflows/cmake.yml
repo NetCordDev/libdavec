@@ -1,35 +1,37 @@
 name: CMake
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+
     strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
+
       matrix:
+        os: [ubuntu-latest, windows-latest]
+        cpp_compiler: [g++, clang++, cl]
+        build_shared_libs: [ON]
         include:
+          - os: windows-latest
+            cpp_compiler: cl
           - os: ubuntu-latest
-            build_type: RelWithDebInfo
             cpp_compiler: g++
-            build_shared_libs: ON
-            
           - os: ubuntu-latest
-            build_type: RelWithDebInfo
             cpp_compiler: clang++
-            build_shared_libs: ON
-
+        exclude:
           - os: windows-latest
-            build_type: Release
-            cpp_compiler: cl
-            build_shared_libs: ON
-
+            cpp_compiler: g++
           - os: windows-latest
-            build_type: RelWithDebInfo
+            cpp_compiler: clang++
+          - os: ubuntu-latest
             cpp_compiler: cl
-            build_shared_libs: ON
 
     steps:
     - uses: actions/checkout@v4
@@ -44,43 +46,49 @@ jobs:
         sudo apt-get install nasm
 
     - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "vcpkg-manifest-dir=${{ github.workspace }}/libdave/cpp/vcpkg-alts/boringssl" >> "$GITHUB_OUTPUT"
         echo "cmake-toolchain-file=${{ github.workspace }}/libdave/cpp/vcpkg/scripts/buildsystems/vcpkg.cmake" >> "$GITHUB_OUTPUT"
+        echo "build-type=Release" >> "$GITHUB_OUTPUT"
+        echo "pdb=ON" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
       run: >
         make configure
         BUILD_DIR=${{ steps.strings.outputs.build-output-dir }}
         CMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        CONFIG=${{ matrix.build_type }}
+        CONFIG=${{ steps.strings.outputs.build-type }}
         VCPKG_MANIFEST_DIR=${{ steps.strings.outputs.vcpkg-manifest-dir }}
         TOOLCHAIN_FILE=${{ steps.strings.outputs.cmake-toolchain-file }}
         SHARED=${{ matrix.build_shared_libs }}
+        PDB=${{ steps.strings.outputs.pdb }}
         SOURCE_DIR=${{ github.workspace }}
 
     - name: Build
+      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: >
         make build
-        CONFIG=${{ matrix.build_type }}
+        CONFIG=${{ steps.strings.outputs.build-type }}
         BUILD_DIR=${{ steps.strings.outputs.build-output-dir }}
         SOURCE_DIR=${{ github.workspace }}
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config ${{ matrix.build_type }}
+      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest --build-config ${{ steps.strings.outputs.build-type }}
 
     - name: Move Build Output
       if: matrix.os == 'windows-latest'
       run: |
-        mv ${{ steps.strings.outputs.build-output-dir }}/out/${{ matrix.build_type }}/* ${{ steps.strings.outputs.build-output-dir }}/out/
-        rm ${{ steps.strings.outputs.build-output-dir }}/out/${{ matrix.build_type }}/
+        mv ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/* ${{ steps.strings.outputs.build-output-dir }}/out/
+        rm ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/
 
     - name: Upload Artifacts with Symbols
-      if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: libdavec-${{ matrix.os }}-${{ matrix.cpp_compiler }}-shared${{ matrix.build_shared_libs }}-symbolsON
@@ -92,18 +100,14 @@ jobs:
       run: |
         strip ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.so
 
+    - name: Strip Symbols
+      if: matrix.os == 'windows-latest'
+      run: |
+        rm ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.pdb
+
     - name: Upload Artifacts without Symbols
-      if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: libdavec-${{ matrix.os }}-${{ matrix.cpp_compiler }}-shared${{ matrix.build_shared_libs }}-symbolsOFF
-        path: |
-          ${{ steps.strings.outputs.build-output-dir }}/out/
-
-    - name: Upload Artifacts
-      if: matrix.os == 'windows-latest'
-      uses: actions/upload-artifact@v4
-      with:
-        name: libdavec-${{ matrix.os }}-${{ matrix.cpp_compiler }}-shared${{ matrix.build_shared_libs }}-symbols${{ fromJSON('["ON", "OFF"]')[matrix.build_type == 'Release'] }}
         path: |
           ${{ steps.strings.outputs.build-output-dir }}/out/
