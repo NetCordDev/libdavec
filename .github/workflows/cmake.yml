@@ -13,6 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         build_type: [Release, RelWithDebInfo]
         build_shared_libs: [ON]
         include:
