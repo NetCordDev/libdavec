@@ -52,7 +52,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install Required Packages
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-24.04' || matrix.os == 'ubuntu-24.04-arm'
       run: |
         sudo apt-get update
         sudo apt-get install nasm
@@ -95,7 +95,7 @@ jobs:
       run: ctest --build-config ${{ steps.strings.outputs.build-type }}
 
     - name: Move Build Output
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2025' || matrix.os == 'windows-11-arm'
       run: |
         mv ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/* ${{ steps.strings.outputs.build-output-dir }}/out/
         rm ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/
@@ -108,12 +108,12 @@ jobs:
           ${{ steps.strings.outputs.build-output-dir }}/out/
 
     - name: Strip Symbols
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-24.04' || matrix.os == 'ubuntu-24.04-arm'
       run: |
         strip ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.so
 
     - name: Strip Symbols
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2025' || matrix.os == 'windows-11-arm'
       run: |
         rm ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.pdb
 
