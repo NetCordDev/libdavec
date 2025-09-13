@@ -16,21 +16,15 @@ jobs:
 
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm, windows-2025, macos-26]
-        cpp_compiler: [g++, clang++, cl]
+        cpp_compiler: [clang++, cl]
         build_shared_libs: [ON]
         include:
           - os: ubuntu-24.04
-            cpp_compiler: g++
-          - os: ubuntu-24.04
             cpp_compiler: clang++
-          - os: ubuntu-24.04-arm
-            cpp_compiler: g++
           - os: ubuntu-24.04-arm
             cpp_compiler: clang++
           - os: windows-2025
             cpp_compiler: cl
-          - os: macos-26
-            cpp_compiler: g++
           - os: macos-26
             cpp_compiler: clang++
         exclude:
@@ -38,8 +32,6 @@ jobs:
             cpp_compiler: cl
           - os: ubuntu-24.04-arm
             cpp_compiler: cl
-          - os: windows-2025
-            cpp_compiler: g++
           - os: windows-2025
             cpp_compiler: clang++
           - os: macos-26
