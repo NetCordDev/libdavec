@@ -15,23 +15,29 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, windows-2025]
         cpp_compiler: [g++, clang++, cl]
         build_shared_libs: [ON]
         include:
-          - os: windows-latest
-            cpp_compiler: cl
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             cpp_compiler: clang++
+          - os: ubuntu-24.04-arm
+            cpp_compiler: g++
+          - os: ubuntu-24.04-arm
+            cpp_compiler: clang++
+          - os: windows-2025
+            cpp_compiler: cl
         exclude:
-          - os: windows-latest
-            cpp_compiler: g++
-          - os: windows-latest
-            cpp_compiler: clang++
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             cpp_compiler: cl
+          - os: ubuntu-24.04-arm
+            cpp_compiler: cl
+          - os: windows-2025
+            cpp_compiler: g++
+          - os: windows-2025
+            cpp_compiler: clang++
 
     steps:
     - uses: actions/checkout@v4
@@ -40,7 +46,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install Required Packages
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-24.04' || matrix.os == 'ubuntu-24.04-arm'
       run: |
         sudo apt-get update
         sudo apt-get install nasm
@@ -83,7 +89,7 @@ jobs:
       run: ctest --build-config ${{ steps.strings.outputs.build-type }}
 
     - name: Move Build Output
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2025'
       run: |
         mv ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/* ${{ steps.strings.outputs.build-output-dir }}/out/
         rm ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/
@@ -96,12 +102,12 @@ jobs:
           ${{ steps.strings.outputs.build-output-dir }}/out/
 
     - name: Strip Symbols
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-24.04' || matrix.os == 'ubuntu-24.04-arm'
       run: |
         strip ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.so
 
     - name: Strip Symbols
-      if: matrix.os == 'windows-latest'
+      if: matrix.os == 'windows-2025'
       run: |
         rm ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.pdb
 

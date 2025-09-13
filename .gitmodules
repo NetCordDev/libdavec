@@ -1,3 +1,4 @@
 [submodule "libdave"]
 	path = libdave
 	url = https://github.com/discord/libdave
+	branch = main
