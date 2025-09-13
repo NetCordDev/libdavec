@@ -68,6 +68,7 @@ jobs:
       run: |
         brew uninstall --ignore-dependencies openssl
         brew install nasm go make
+        echo "/usr/local/opt/make/libexec/gnubin" >> $GITHUB_PATH
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
