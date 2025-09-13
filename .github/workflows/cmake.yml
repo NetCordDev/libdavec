@@ -66,7 +66,7 @@ jobs:
     - name: Setup Packages
       if: matrix.os == 'macos-13' || matrix.os == 'macos-26'
       run: |
-        brew uninstall openssl
+        brew uninstall --ignore-dependencies openssl
         brew install nasm go
 
     - name: Set reusable strings
