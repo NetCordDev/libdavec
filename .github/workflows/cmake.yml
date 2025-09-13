@@ -129,7 +129,7 @@ jobs:
     - name: Strip Symbols
       if: matrix.os == 'macos-26'
       run: |
-        strip -S ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.dylib
+        strip -x ${{ steps.strings.outputs.build-output-dir }}/out/libdavec.dylib
 
     - name: Upload Artifacts without Symbols
       uses: actions/upload-artifact@v4
