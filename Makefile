@@ -12,9 +12,6 @@ else
 $(error "Unknown SSL option: $(SSL). Valid options are: boringssl, openssl1.1, openssl3")
 endif
 
-$(info    PROCESSOR_ARCHITEW6432 is $(PROCESSOR_ARCHITEW6432))
-$(info    PROCESSOR_ARCHITECTURE is $(PROCESSOR_ARCHITECTURE))
-
 WIN_TRIPLET=
 ifeq ($(OS),Windows_NT)
 	ifeq ($(PROCESSOR_ARCHITEW6432),)

@@ -1,4 +1,4 @@
 [submodule "libdave"]
 	path = libdave
-	url = https://github.com/KubaZ2/libdave
-	branch = fix/msvc-arm
+	url = https://github.com/discord/libdave
+	branch = main
