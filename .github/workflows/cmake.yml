@@ -94,6 +94,10 @@ jobs:
         mv ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/* ${{ steps.strings.outputs.build-output-dir }}/out/
         rm ${{ steps.strings.outputs.build-output-dir }}/out/${{ steps.strings.outputs.build-type }}/
 
+    - name: Copy License
+      run: |
+        cp ${{ github.workspace }}/LICENSE.md ${{ steps.strings.outputs.build-output-dir }}/out/
+
     - name: Upload Artifacts with Symbols
       uses: actions/upload-artifact@v4
       with:
