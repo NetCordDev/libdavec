@@ -24,13 +24,13 @@ typedef struct DaveCommitProcessingResult {
     void *roster_update;
 } DaveCommitProcessingResult;
 
-typedef void (*DaveMlsFailureCallback)(const char*, const char*);
-
-typedef void (*DaveProtocolVersionChangedCallback)(void);
-
-LIBDAVEC_EXPORT extern const int DAVE_INIT_TRANSITION_ID;
-
-LIBDAVEC_EXPORT extern const int DAVE_DISABLED_VERSION;
+typedef enum DaveLoggingSeverity {
+    VERBOSE,
+    INFO,
+    WARNING,
+    ERROR,
+    NONE,
+} DaveLoggingSeverity;
 
 typedef enum DaveMediaType : uint8_t {
     AUDIO,
@@ -46,6 +46,18 @@ typedef enum DaveCodec : uint8_t {
     H265,
     AV1
 } DaveCodec;
+
+typedef void (*DaveLogSink)(DaveLoggingSeverity severity, const char *file, int line, const char *message);
+
+typedef void (*DaveMlsFailureCallback)(const char*, const char*);
+
+typedef void (*DaveProtocolVersionChangedCallback)(void);
+
+LIBDAVEC_EXPORT extern const int DAVE_INIT_TRANSITION_ID;
+
+LIBDAVEC_EXPORT extern const int DAVE_DISABLED_VERSION;
+
+LIBDAVEC_EXPORT void dave_set_log_sink(DaveLogSink sink);
 
 LIBDAVEC_EXPORT uint16_t dave_max_supported_protocol_version(void);
 
