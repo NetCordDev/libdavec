@@ -37,6 +37,21 @@ const int DAVE_INIT_TRANSITION_ID = discord::dave::kInitTransitionId;
 
 const int DAVE_DISABLED_VERSION = discord::dave::kDisabledVersion;
 
+void dave_set_log_sink(DaveLogSink sink) {
+    static std::atomic<DaveLogSink> log_sink = nullptr;
+    
+    log_sink.store(sink);
+
+    if (sink) {
+        discord::dave::SetLogSink([](discord::dave::LoggingSeverity severity, const char *file, int line, const std::string &message) {
+            auto stored = log_sink.load();
+            if (stored)
+                stored((DaveLoggingSeverity)severity, file, line, message.c_str());
+        });
+    } else
+        discord::dave::SetLogSink(nullptr);
+}
+
 uint16_t dave_max_supported_protocol_version(void) {
     return discord::dave::MaxSupportedProtocolVersion();
 }
