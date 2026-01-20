@@ -1,3 +1,6 @@
+> [!WARNING]
+> **This repository has been archived since [libdave](https://github.com/discord/libdave) provided its own C API.**
+
 # libdavec
 
 libdavec provides C language bindings for Discord's [libdave](https://github.com/discord/libdave), enabling integration of the DAVE protocol in languages that can interface with C libraries.
